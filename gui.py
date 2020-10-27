@@ -19,16 +19,10 @@ class Player(pygame.sprite.Sprite):
         self.h = sizeY
         self.posx = posx
         self.posy = posy
-        #self.rect = [random.randint(sizeX,550 - sizeX), random.randint(sizeY,550 - sizeY)]
         self.rect = [posx, posy]
         self.surf = pygame.image.load(image)
         self.surf = pygame.transform.scale(self.surf, (sizeX,sizeY))
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
-        #self.rect = self.surf.get_rect()
-        #self.rect.center = (posx, posy)
-        #self.rect.width = sizeX
-        #self.rect.height = sizeY
-        #self.rect = self.surf.get_rect()
 
     def setXLimit(self, x):
         self.xLimit = x
@@ -55,7 +49,6 @@ class Player(pygame.sprite.Sprite):
             self.moveSurf(self.x//step, self.y//step)
             self.yLimit -= abs(self.y/step)
             self.xLimit -= abs(self.x/step)
-            #if ((self.posx > (550-self.w)) or 
             if (self.posx < 0):
                 self.x = self.x * -1
             if (self.posx > (550 - self.w)):
@@ -64,11 +57,8 @@ class Player(pygame.sprite.Sprite):
                 self.y = self.y * -1
             if (self.posy > (550 - self.h)):
                 self.y = self.y * -1
-            
-
         else:
             self.cont += 1
-        #print(self.x, self.y, self.xLimit, self.yLimit)
         return (self.yLimit + self.xLimit > 0)
 
 
@@ -87,12 +77,12 @@ bg = pygame.image.load("soccerField.jpg")
 net = pygame.image.load("soccerNet.jpg")
 
 player = Player("sprite.png", CHARACTERX, CHARACTERY, 50, 50)
-ball = Player("soccerBall.png", BALLSIZE, BALLSIZE, 50, 200)
+ball = Player("soccerBall.png", BALLSIZE, BALLSIZE, 50, 250)
 
 
 FramePerSec = pygame.time.Clock()
-moving = False
-movingBall = True
+moving = True
+movingBall = False
 
 while True:
     #set widht and height
@@ -105,24 +95,33 @@ while True:
     screen.blit(ball.surf, ball.rect)
 
     if (moving):
-        moving = player.move(400, 1 * math.pi / 2, 5, 20)
+        moving = player.move(400, 1 * math.pi / 2, 5, 20) #poner los parametros
         if(collition(player.posx, player.posy, ball.posx, ball.posy)):
-            #print("si")
             ball.setRect(player.posx + 50, player.posy + 25)
             moving = False
+            #mover parametros de la pelota
             movingBall = True
+    #else:
+        #if (not(movingBall)):
+            #Recalculada 
+            #Mover los parametros
+            #moving = True
     
     if (movingBall):
-        movingBall = ball.move(600, 0 * math.pi / 2, 5, 20)
+        movingBall = ball.move(1000, 0 * math.pi / 2, 5, 20) #poner los parametros
         if(collition(player.posx, player.posy, ball.posx, ball.posy)):
-            #print("si")
             ball.setRect(player.posx + 50, player.posy + 25)
-        if(collition(535, 225, ball.posx, ball.posy)):
-            movingBall = False
+        if(collition(525, 225, ball.posx, ball.posy)):
             print("gool")
+            movingBall = False
+    #else: 
+        #if (not(moving)):
+            #Recalculada 
+            #Mover los parametros
+            #moving = True
 
 
-    screen.blit(net,[535,225])
+    screen.blit(net,[525,225])
     pygame.display.flip()
 
     #Check if window was close
