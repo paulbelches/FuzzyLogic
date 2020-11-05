@@ -77,8 +77,8 @@ FPS = 60
 bg = pygame.image.load("soccerField.jpg")
 net = pygame.image.load("soccerNet.jpg")
 
-player = Player("sprite.png", CHARACTERX, CHARACTERY, 50, 50)
-ball = Player("soccerBall.png", BALLSIZE, BALLSIZE, 50, 250)
+player = Player("sprite.png", CHARACTERX, CHARACTERY, (math.random()*525)//1, (math.random()*525)//1)
+ball = Player("soccerBall.png", BALLSIZE, BALLSIZE, (math.random()*525)//1, (math.random()*525)//1)
 
 
 FramePerSec = pygame.time.Clock()
@@ -281,8 +281,8 @@ while True:
     screen.blit(ball.surf, ball.rect)
 
     if (moving):
-
         distance,angle=valoresjug(player.posx,player.posy,ball.posx,ball.posy,0)
+        while(distance>15):
         angulonuevo,distancianueva=fuzzylogic(distance,angle,Dmax)
         moving = player.move(distancianueva, math.radians(angle), 5, 20) #poner los parametros
         if(collition(player.posx, player.posy, ball.posx, ball.posy)):
