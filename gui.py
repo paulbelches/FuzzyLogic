@@ -18,6 +18,7 @@ class Player(pygame.sprite.Sprite):
         self.w = sizeX
         self.h = sizeY
         self.posx = posx
+        self.angle = 0
         self.posy = posy
         self.rect = [posx, posy]
         self.surf = pygame.image.load(image)
@@ -84,6 +85,95 @@ FramePerSec = pygame.time.Clock()
 moving = True
 movingBall = False
 
+def valoresjug(ppx,ppy,pbx,pby,anglep):
+    x=abs(ppx-pbx)
+    y=abs(ppy-pby)
+    distance=math.sqrt((x*x+y*y))
+    anglep=math.degrees(anglep)
+    if(ppx>pbx):
+        angle1=math.degrees(math.atan(x/y))
+        if(ppy>pby):
+            if(90<=anglep<=180):
+                angle=angle1-anglep
+            else:
+                angle=angle1+anglep
+        elif(ppy<pby):
+            if(90<=anglep<=180):
+                angle=180-angle1-anglep
+            else:
+                angle=180-angle1+anglep
+        else:
+            angle=90-anglep
+    elif(ppx<pbx):
+        angle1=math.degrees(math.atan(y/x))
+        if(ppy>pby):
+            angle=angle1-anglep
+        elif(ppy<pby):
+            angle=-angle1-anglep
+        else:
+            angle=-anglep
+    angle=angle%360    
+    return distance,angle
+
+def distancebelongsto(distance,Dmax):
+    l1=Dmax/4
+    l2=2*l1
+    l3=3*l1
+    if (distance<l1):
+        cerca=1
+        medio=0
+        lejos=0
+    elif(l1<=distance<l2):
+        cerca=((distance-l2)/(l1-l2))
+        medio=((distance-l1)/(l2-l1))
+        lejos=0
+    elif(l2<=distance<l3):
+        cerca=0
+        medio=((distance-l3)/(l2-l3))
+        lejos=((distance-l2)/(l3-l2))
+    elif(l3<=distance):
+        cerca=0
+        medio=0
+        lejos=1
+    return cerca,medio,lejos
+#siempre gira en el sentido de las manecillas del reloj
+def anglebelongsto(angle):
+    l1=360/4
+    l2=2*l1
+    l3=3*l1
+    if (angle<l1):
+        poco=1
+        maso=0
+        mucho=0
+    elif(l1<=angle<l2):
+        poco=((angle-l2)/(l1-l2))
+        maso=((angle-l1)/(l2-l1))
+        mucho=0
+    elif(l2<=angle<l3):
+        poco=0
+        maso=((angle-l3)/(l2-l3))
+        mucho=((angle-l2)/(l3-l2))
+    elif(l3<=angle):
+        poco=0
+        maso=0
+        mucho=1
+    return poco,maso,mucho
+
+# 1. si estoy muy volteado con respecto a la pelota, giro mucho
+# 2. si estoy medio volteado y lejos, giro un poco y avanzo muhco
+# 3. si estoy poco volteado y lejos, avanzo mucho
+# 4. si estoy medio lejos y medio volteado, giro un poco y avanzo un poco
+# 5. si estoy cerca y medio volteado, me volteo un poco
+
+
+def fuzzylogic(distance,angle,Dmax):
+    cerca,medio,lejos=distancebelongsto(distance,Dmax)
+    poco,maso,mucho=anglebelongsto(angle)
+    
+
+
+        
+#while distancia entre pelota y jugador es muy grande, mover al jugador
 while True:
     #set widht and height
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -102,7 +192,7 @@ while True:
             #mover parametros de la pelota
             movingBall = True
     #else:
-        #if (not(movingBall)):
+        #if (not(movingBall)):WHIT
             #Recalculada 
             #Mover los parametros
             #moving = True
