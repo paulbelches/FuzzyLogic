@@ -91,8 +91,8 @@ text = font.render('Gol!', True, white)
 font2= pygame.font.Font('freesansbold.ttf', 14)
 text2 = font2.render('Presione Esc para salir', True, white)
 
-player = Player("sprite.png", CHARACTERX, CHARACTERY, random.randint(10, 525), random.randint(0, 525))
-ball = Player("soccerBall.png", BALLSIZE, BALLSIZE, random.randint(10, 525), random.randint(0, 525))
+player = Player("sprite.png", CHARACTERX, CHARACTERY, random.randint(50, 250), random.randint(150, 350))
+ball = Player("soccerBall.png", BALLSIZE, BALLSIZE, random.randint(150, 400), random.randint(150, 350))
 
 
 FramePerSec = pygame.time.Clock()
