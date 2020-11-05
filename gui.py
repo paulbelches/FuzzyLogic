@@ -50,6 +50,7 @@ class Player(pygame.sprite.Sprite):
             self.moveSurf(self.x//step, self.y//step)
             self.yLimit -= abs(self.y/step)
             self.xLimit -= abs(self.x/step)
+            #rebote
             if (self.posx < 0):
                 self.x = self.x * -1
             if (self.posx > (550 - self.w)):
@@ -62,9 +63,11 @@ class Player(pygame.sprite.Sprite):
             self.cont += 1
         return (self.yLimit + self.xLimit > 0)
 
-
 def collition(x1, y1, x2, y2):
-    return (abs(y1 - (y2 - 25)) <= 25) and (abs(x1 - (x2-15)) <= 25) 
+    x=(abs(x1-x2))
+    y=(abs(y1-y2))
+    distance=math.sqrt((x*x+y*y))
+    return (distance < 50) 
 
 pygame.init()
 vec = pygame.math.Vector2  # 2 for two dimensional
@@ -76,21 +79,34 @@ FRIC = -0.12
 FPS = 60
 bg = pygame.image.load("soccerField.jpg")
 net = pygame.image.load("soccerNet.jpg")
+white = (255, 255, 255) 
+green = (0, 255, 0) 
+blue = (0, 0, 128) 
 
-player = Player("sprite.png", CHARACTERX, CHARACTERY, (math.random()*525)//1, (math.random()*525)//1)
-ball = Player("soccerBall.png", BALLSIZE, BALLSIZE, (math.random()*525)//1, (math.random()*525)//1)
+display_surface = pygame.display.set_mode((550, 550))
+
+font = pygame.font.Font('freesansbold.ttf', 82)
+text = font.render('Gol!', True, white)
+
+font2= pygame.font.Font('freesansbold.ttf', 14)
+text2 = font2.render('Presione Esc para salir', True, white)
+
+player = Player("sprite.png", CHARACTERX, CHARACTERY, random.randint(10, 525), random.randint(0, 525))
+ball = Player("soccerBall.png", BALLSIZE, BALLSIZE, random.randint(10, 525), random.randint(0, 525))
 
 
 FramePerSec = pygame.time.Clock()
-moving = True
-movingBall = False
 
 def valoresjug(ppx,ppy,pbx,pby,anglep):
     x=float(abs(ppx-pbx))
     y=float(abs(ppy-pby))
     distance=math.sqrt((x*x+y*y))
+    angle = 0
     if(ppx>pbx):
-        angle1=math.degrees(math.atan(x/y))
+        if(y!=0):
+            angle1=math.degrees(math.atan(x/y))
+        elif(y==0):
+            angle=(-1*anglep)
         if(ppy>pby):
             if(90<=anglep<=180):
                 angle=angle1-anglep
@@ -106,12 +122,17 @@ def valoresjug(ppx,ppy,pbx,pby,anglep):
     elif(ppx<pbx):
         angle1=math.degrees(math.atan(y/x))
         if(ppy>pby):
-            angle=angle1-anglep
+            if(0<=anglep<=180):
+                angle=angle1-anglep
+            elif(180<anglep<=360):
+                angle=360-(angle1+anglep)
         elif(ppy<pby):
             angle=-angle1-anglep
         else:
-            angle=-anglep
-    angle=angle%360    
+            angle=-anglep 
+    elif(ppx==ppx):
+        angle=-1*(anglep+90)  
+    angle=angle%360
     return distance,angle
 
 def distancebelongsto(distance,Dmax):
@@ -157,7 +178,6 @@ def anglebelongsto(angle):
         maso=0
         mucho=1
     return poco,maso,mucho
-
 
 def giromucho(x):
     l1=360/4
@@ -206,7 +226,6 @@ def memuevopoco(x,Dmax):
     elif(l2<=1):
         valor=0
     return valor
-
 
 def fuzzylogic(distance,angle,Dmax):
     cerca,medio,lejos=distancebelongsto(distance,Dmax)
@@ -263,54 +282,72 @@ def fuzzylogic(distance,angle,Dmax):
     distancianueva=suma3/suma4
     return angulonuevo,distancianueva
 
-#distance,angle=valoresjug(5,487,723,234,30)
+def angulodetiro(ppx,ppy):
+    x=abs(525-ppx)
+    y=abs(225-ppy)
+    if (x == 0):
+        return 90 if (ppy<225) else -90
+    angulodetiro=math.degrees(math.atan(y/x))
+    if(ppy<225):
+        angulodetiro=-1*angulodetiro 
+        angulodetiro=angulodetiro%360
+    elif(ppy>225):
+        angulodetiro=angulodetiro%360
+    elif(ppy==225):
+        angulodetiro=0
+    angulodetiro=angulodetiro+ ((2 * random.random() -1)*10)
+    return angulodetiro
+
 Dmax=math.sqrt(550*550*2)
-#angulonuevo,distancianueva=fuzzylogic(distance,angle,Dmax)
-
-
-        
-#while distancia entre pelota y jugador es muy grande, mover al jugador
+moving = False
+movingBall = False
+anguloPelota = 0
+notOver = True
+angulonuevo, distancianueva = 0,0
 while True:
     #set widht and height
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     #set bg image
     screen.blit(bg,[0,0])
-    
+    display_surface.blit(text2,[530,225])
     pygame.display.set_caption("Game")
     screen.blit(player.surf, player.rect)
     screen.blit(ball.surf, ball.rect)
 
     if (moving):
-        distance,angle=valoresjug(player.posx,player.posy,ball.posx,ball.posy,0)
-        while(distance>15):
-        angulonuevo,distancianueva=fuzzylogic(distance,angle,Dmax)
+        #player.posx=math.cos(angle)*distance+player.posx
+        #player.posy=math.sin(angle)*distance+player.posy
         moving = player.move(distancianueva, math.radians(angle), 5, 20) #poner los parametros
         if(collition(player.posx, player.posy, ball.posx, ball.posy)):
             ball.setRect(player.posx + 50, player.posy + 25)
             moving = False
-            #mover parametros de la pelota
+            anguloPelota = angulodetiro(ball.posx, ball.posy)
             movingBall = True
-    #else:
-        #if (not(movingBall)):WHIT
-            #Recalculada 
-            #Mover los parametros
-            #moving = True
+    else:
+        if (not(movingBall) and notOver):
+            distance,angle=valoresjug(player.posx,player.posy,ball.posx,ball.posy,math.degrees(player.angle))
+            angulonuevo,distancianueva=fuzzylogic(distance,angle,Dmax)
+            player.angle = math.radians(angulonuevo) + player.angle
+            print("cambie", player.angle)
+
+            moving = True
     
     if (movingBall):
-        movingBall = ball.move(1000, 0 * math.pi / 2, 5, 20) #poner los parametros
+        #print(anguloPelota)
+        movingBall = ball.move(400, math.radians(anguloPelota), 5, 20) #poner los parametros
         if(collition(player.posx, player.posy, ball.posx, ball.posy)):
-            ball.setRect(player.posx + 50, player.posy + 25)
+            ball.setRect(player.posx + 60, player.posy + 25)
         if(collition(525, 225, ball.posx, ball.posy)):
             print("gool")
+            notOver = False
             movingBall = False
-    #else: 
-        #if (not(moving)):
-            #Recalculada 
-            #Mover los parametros
-            #moving = True
-
+    else: 
+        if (not(moving) and notOver):
+            moving = True
 
     screen.blit(net,[525,225])
+    if (not(notOver)):
+        display_surface.blit(text,[200, 225])
     pygame.display.flip()
 
     #Check if window was close
